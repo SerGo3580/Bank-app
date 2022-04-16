@@ -69,13 +69,24 @@ th {
   align-items: center;
 }
 
-.calcButtonContainer button:first-child, .DisplayCalcButton {
+.calcButtonContainer button:first-child {
   margin-top: 10px;
   background-color: aquamarine;
   width: 70px;
   height: 30px;
   border-radius: 5px;
   border: 1px solid black;
+  margin-right: 10px;
+}
+
+.submitBankButton, .DisplayCalcButton {
+  width: 80px;
+  height: 35px;
+  border: 1px solid black;
+  background-color: rgb(89, 228, 112);
+}
+
+.DisplayCalcButton {
   margin-right: 10px;
 }
 
@@ -95,4 +106,11 @@ th {
 .fa-arrow-up, .fa-arrow-down {
   width: 45px;
   height: 45px;
+}
+
+.buttonBlock {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
 }/*# sourceMappingURL=style.css.map */

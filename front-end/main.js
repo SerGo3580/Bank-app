@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { createRoot } from 'react-dom/client';
 const root = createRoot(document.getElementById("app"));
 const Button = props =>
-    <><button className={props.className ? props.className : ""}
-        onClick={props.onClick}>
+    <><button className={props.className ? props.className : "" }
+        onClick={props.onClick} type = "button">
         {props.text}
     </button></>
 const BankList = props => {
@@ -52,7 +52,6 @@ const BankList = props => {
                 }
             </tbody>
         </table>
-
     </>
 }
 const CreditCalculator = props => {
@@ -95,7 +94,7 @@ const CreditCalculator = props => {
                 {Button({
                     className: "exitCalc",
                     text: "exit",
-                    onClick: props.exitCalcFunc
+                    onClick: props.exitCalcFunc,
                 })}
             </div>
         </form>
@@ -114,6 +113,7 @@ class App extends React.Component {
             incorrectCalcInput: [],
             sortBy: this.props.headers[0].index,
             isAscending: false,
+            saveBankError: false,
         }
         this._addNewBank = this._addNewBank.bind(this);
         this._displayEditor = this._displayEditor.bind(this);
@@ -124,6 +124,17 @@ class App extends React.Component {
         this._sortChange = this._sortChange.bind(this);
         this._sort = this._sort.bind(this);
         this._ascendingChange = this._ascendingChange.bind(this);
+        this._saveBankChange = this._saveBankChange.bind(this);
+    }
+    _saveBankChange(e) {
+        let column = e.target.closest('th').cellIndex;
+        let newAddBankValue = this.state.addNewBank.BankValue;
+        newAddBankValue[column] = e.target.value;
+        this.setState({
+            addNewBank: {
+                BankValue: newAddBankValue,
+            }
+        })
     }
     calcMortgage(bankIndex, downPayment, p, header) {
         p -= (p / 100) * downPayment;
@@ -135,7 +146,7 @@ class App extends React.Component {
     }
     _calcValueSubmit(e) {
         e.preventDefault();
-        if (!this.state.data.length){
+        if (!this.state.data.length) {
             return;
         }
         let initalLoan = e.target.InitialLoan.value - 0, bankIndex = e.target.bank.value;
@@ -182,50 +193,69 @@ class App extends React.Component {
         })
     }
     _displayCreditCalc() {
-        let newDisplCalValue = !this.state.isNeedDisplayCalc;
+        let newDisplCalValue = !this.state.isNeedDisplayCalc, newData = this.state.data;
+        if (this.state.addNewBank){
+            let curNewBankValue = this.state.addNewBank.BankValue;
+            curNewBankValue = curNewBankValue.filter(el => !!el);
+            if (curNewBankValue.length !== this.props.headers.length) {
+                this.setState({
+                    saveBankError: true,
+                })
+                return;
+            }
+            curNewBankValue = curNewBankValue.map((el, index) => {
+                return this.props.headers[index].isPercent ? el += " %" : el;
+            })
+            let newDataRow = newData[newData.length - 1].map((el,index)=> curNewBankValue[index]);
+            newData.pop()
+            newData.push(newDataRow);
+            localStorage.setItem('data', JSON.stringify(newData));
+        }
         this.setState({
             isNeedDisplayCalc: newDisplCalValue,
             incorrectCalcInput: [],
+            data: newData, 
         });
     }
     _saveData(e) {
-        e.preventDefault();
-        let inputValue = e.target.firstChild.value;
         let newData = this.state.data;
-
-        if (!this.state.addNewBank) {
-            if (this.props.headers[this.state.edit.column].isPercent) {
-                inputValue += " %";
+        if (this.state.addNewBank) {
+            let curNewBankValue = this.state.addNewBank.BankValue;
+            curNewBankValue = curNewBankValue.filter(el => !!el);
+            if (curNewBankValue.length !== this.props.headers.length) {
+                this.setState({
+                    saveBankError: true,
+                })
+                return;
             }
-            newData[this.state.edit.row][this.state.edit.column] = inputValue;
-
+            curNewBankValue = curNewBankValue.map((el, index) => {
+                return this.props.headers[index].isPercent ? el += " %" : el;
+            })
+            let newDataRow = newData[newData.length - 1].map((el,index)=> curNewBankValue[index]);
+            newData.pop()
+            newData.push(newDataRow);
+            
             localStorage.setItem('data', JSON.stringify(newData));
             this.setState({
-                edit: null,
                 data: newData,
-            })
+                saveBankError: false,
+                addNewBank:null,
+            });
             return;
         }
-        if (this.props.headers[e.target.dataset.col].isPercent) {
+        e.preventDefault();
+        let inputValue = e.target.firstChild.value;
+        if (this.props.headers[this.state.edit.column].isPercent) {
             inputValue += " %";
         }
-        let target = e.target;
-        let newBankSavedProp = this.state.addNewBank.AddedPropertyIndex;
-        newBankSavedProp.push(target.dataset.col);
-        newData[target.dataset.row][target.dataset.col] = inputValue;
-        let isBankAdded = newBankSavedProp.length == newData[0].length, newAddNewBankValue;
-        newAddNewBankValue = {
-            row: target.dataset.row,
-            AddedPropertyIndex: newBankSavedProp,
-        }
-        if (isBankAdded) {
-            localStorage.setItem('data', JSON.stringify(newData));
-            newAddNewBankValue = null;
-        }
+        newData[this.state.edit.row][this.state.edit.column] = inputValue;
+
+        localStorage.setItem('data', JSON.stringify(newData));
         this.setState({
+            edit: null,
             data: newData,
-            addNewBank: newAddNewBankValue,
         })
+        return;
     }
     _sort() {
         let sortByIndex = this.state.sortBy;
@@ -233,9 +263,9 @@ class App extends React.Component {
         newData.sort((el1, el2) => {
             if (this.props.headers[sortByIndex].type == "text") {
                 if (this.state.isAscending) {
-                    return el2[sortByIndex].charCodeAt(0) - el1[sortByIndex].charCodeAt(0);
+                    return el2[sortByIndex].toLowerCase().charCodeAt(0) - el1[sortByIndex].toLowerCase().charCodeAt(0);
                 }
-                return el1[sortByIndex].charCodeAt(0) - el2[sortByIndex].charCodeAt(0);
+                return el1[sortByIndex].toLowerCase().charCodeAt(0) - el2[sortByIndex].toLowerCase().charCodeAt(0);
             }
             if (this.state.isAscending) {
                 return parseInt(el2[sortByIndex]) - parseInt(el1[sortByIndex]);
@@ -254,10 +284,11 @@ class App extends React.Component {
         }
         curData.splice(deleteBankRow, 1);
         localStorage.setItem('data', JSON.stringify(curData));
-        if (this.state.addNewBank && this.state.addNewBank.row == deleteBankRow) {
+        if (this.state.addNewBank && this.state.addNewBank) {
             this.setState({
                 data: curData,
                 addNewBank: null,
+                saveBankError: false,
             });
             return;
         }
@@ -278,9 +309,11 @@ class App extends React.Component {
                 el.min = 0;
             }
             return <>
-                <form onSubmit={this._saveData} data-row={currentData.length} data-col={index}>
-                    <input key={index.toString()} type={el.type} placeholder={el.name} min={el.min} required max={this.props.headers[index].isPercent ? 100 : null}></input>
-                </form>
+                <input key={index.toString()} type={el.type}
+                    placeholder={el.name} min={el.min}
+                    required max={this.props.headers[index].isPercent ? 100 : null}
+                    onChange={this._saveBankChange}>
+                </input>
             </>
         }
         ))
@@ -288,8 +321,7 @@ class App extends React.Component {
             data: currentData,
             edit: null,
             addNewBank: {
-                row: currentData.length - 1,
-                AddedPropertyIndex: [],
+                BankValue: [],
             },
         })
     }
@@ -345,12 +377,24 @@ class App extends React.Component {
 
                     })
                 }
+                <div className='buttonBlock'>
                 {
                     Button({
                         className: "DisplayCalcButton",
                         text: "calculate",
                         onClick: this._displayCreditCalc
                     })
+                }
+                {
+                    this.state.addNewBank ? Button({
+                        className: "submitBankButton",
+                        text: "save new bank",
+                        onClick: this._saveData
+                    }) : null
+                }
+                </div>
+                {
+                    this.state.saveBankError ? <><h3>Enter all bank data</h3></>: null
                 }
             </>
         }

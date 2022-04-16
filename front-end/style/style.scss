@@ -64,7 +64,7 @@ th {
     margin-bottom:30px;
     @include flexColumn()
 }
-.calcButtonContainer button:first-child, .DisplayCalcButton{
+.calcButtonContainer button:first-child{
     margin-top:10px;
     background-color: aquamarine;
     width:70px;
@@ -72,6 +72,15 @@ th {
     border-radius: 5px;
     border:1px solid black;
     margin-right: 10px;
+}
+.submitBankButton , .DisplayCalcButton{
+    width:80px;
+    height:35px;
+    border:1px solid black;
+    background-color: rgb(89, 228, 112);
+}
+.DisplayCalcButton{
+    margin-right:10px;
 }
 .controlPanel{
     @include flexRow();
@@ -82,4 +91,8 @@ th {
 .fa-arrow-up, .fa-arrow-down{
     width: 45px;
     height: 45px;
+}
+.buttonBlock{
+    @include flexRow();
+    margin-top: 15px;
 }
