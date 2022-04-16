@@ -114,6 +114,7 @@ class App extends React.Component {
             sortBy: this.props.headers[0].index,
             isAscending: false,
             saveBankError: false,
+            bankNumError: false,
         }
         this._addNewBank = this._addNewBank.bind(this);
         this._displayEditor = this._displayEditor.bind(this);
@@ -211,10 +212,17 @@ class App extends React.Component {
             newData.push(newDataRow);
             localStorage.setItem('data', JSON.stringify(newData));
         }
+        if(newData.length < 1){
+            this.setState({
+                bankNumError:true,
+            });
+            return;
+        }
         this.setState({
             isNeedDisplayCalc: newDisplCalValue,
             incorrectCalcInput: [],
             data: newData, 
+            bankNumError:false,
         });
     }
     _saveData(e) {
@@ -240,6 +248,7 @@ class App extends React.Component {
                 data: newData,
                 saveBankError: false,
                 addNewBank:null,
+                bankNumError:false,
             });
             return;
         }
@@ -395,6 +404,9 @@ class App extends React.Component {
                 </div>
                 {
                     this.state.saveBankError ? <><h3>Enter all bank data</h3></>: null
+                }
+                {
+                    this.state.bankNumError ? <><h3>To open calculate enter at least 1 bank</h3></>:null
                 }
             </>
         }
