@@ -1,5 +1,5 @@
 import React from 'react';
-import "./fontAwesome/fontAwesome.js"
+import "../fontAwesome/fontAwesome.js"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { createRoot } from 'react-dom/client';
 const root = createRoot(document.getElementById("app"));
@@ -9,7 +9,6 @@ const Button = props =>
         {props.text}
     </button></>
 const BankList = props => {
-    console.log("BankList")
     let edit = props.edit, editRow, editColumn;
     if (edit) {
         editRow = props.edit.row;
@@ -132,7 +131,6 @@ class App extends React.Component {
         r = parseInt(r);
         let n = p / this.state.data[bankIndex][header.find(head => head.name == "Loan term").index] - 0;
         let rDiv12 = r / 12;
-        console.log(r, n, p, rDiv12);
         return (p * rDiv12 * Math.pow(1 + rDiv12, n)) / (Math.pow(1 + rDiv12, n) - 1);
     }
     _calcValueSubmit(e) {
@@ -142,7 +140,6 @@ class App extends React.Component {
         }
         let initalLoan = e.target.InitialLoan.value - 0, bankIndex = e.target.bank.value;
         let newIncorrectInput = [];
-        console.log(bankIndex)
         if (!(bankIndex + 1)) {
             newIncorrectInput.push(3);
             return;
@@ -177,7 +174,6 @@ class App extends React.Component {
             return;
         }
         let editColumn = e.target.cellIndex, editRow = parseInt(e.target.dataset.row, 10);
-        console.log(editColumn);
         this.setState({
             edit: {
                 column: editColumn,
@@ -233,7 +229,6 @@ class App extends React.Component {
     }
     _sort() {
         let sortByIndex = this.state.sortBy;
-        console.log(this.state.isAscending)
         let newData = this.state.data;
         newData.sort((el1, el2) => {
             if (this.props.headers[sortByIndex].type == "text") {
@@ -254,11 +249,9 @@ class App extends React.Component {
     }
     _deleteBank(e) {
         let deleteBankRow = parseInt(e.target.closest('th').dataset.row, 10), curData = this.state.data;
-        console.log("delete", deleteBankRow)
         if (!(deleteBankRow + 1)) {
             return;
         }
-        console.log(curData, deleteBankRow)
         curData.splice(deleteBankRow, 1);
         localStorage.setItem('data', JSON.stringify(curData));
         if (this.state.addNewBank && this.state.addNewBank.row == deleteBankRow) {
